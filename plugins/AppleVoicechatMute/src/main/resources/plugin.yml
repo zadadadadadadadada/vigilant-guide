@@ -1,0 +1,63 @@
+name: AppleVoicechatMute
+version: '${project.version}'
+main: fun.applecube.voicemute.AppleVoicechatMutePlugin
+api-version: '1.21'
+author: APPLECUBE
+description: Мут в голосовом чате (Simple Voice Chat) и команда /voice - инструкция, проверка мода и награда за установку.
+depend: [voicechat]
+softdepend: [PlaceholderAPI]
+
+commands:
+  voice:
+    description: Как установить голосовой чат; награда за установленный мод
+    usage: /<command>
+    aliases: [войс, голос]
+    permission: applevoicemute.voice
+  vmute:
+    description: Отключить игроку микрофон в голосовом чате
+    usage: /<command> <игрок> [время] [причина]
+    aliases: [voicemute, vcmute]
+    permission: applevoicemute.mute
+  vunmute:
+    description: Вернуть игроку микрофон в голосовом чате
+    usage: /<command> <игрок>
+    aliases: [voiceunmute, vcunmute]
+    permission: applevoicemute.unmute
+  vmutelist:
+    description: Список мутов в голосовом чате
+    usage: /<command> [страница]
+    aliases: [voicemutes, vcmutes]
+    permission: applevoicemute.list
+  applevoicemute:
+    description: Перезагрузка AppleVoicechatMute и сброс награды за /voice
+    usage: /<command> reload | resetreward <игрок>
+    aliases: [avm]
+    permission: applevoicemute.admin
+
+permissions:
+  applevoicemute.voice:
+    description: /voice
+    default: true
+  applevoicemute.mute:
+    description: /vmute
+    default: op
+  applevoicemute.unmute:
+    description: /vunmute
+    default: op
+  applevoicemute.list:
+    description: /vmutelist
+    default: op
+  applevoicemute.notify:
+    description: Видеть в чате, кого и за что заглушили другие модераторы
+    default: op
+  applevoicemute.admin:
+    description: /applevoicemute reload и resetreward
+    default: op
+  applevoicemute.staff:
+    description: Набор для модератора - мут, размут, список и уведомления
+    default: op
+    children:
+      applevoicemute.mute: true
+      applevoicemute.unmute: true
+      applevoicemute.list: true
+      applevoicemute.notify: true

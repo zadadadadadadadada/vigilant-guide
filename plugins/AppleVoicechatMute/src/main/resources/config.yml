@@ -1,0 +1,121 @@
+# ══════════════════════════════════════════════════════════════════
+#  AppleVoicechatMute - мут в голосовом чате (Simple Voice Chat) и команда /voice
+#
+#  /vmute <игрок> [время] [причина]   отключить игроку микрофон (applevoicemute.mute)
+#                                      время: 30s, 10m, 2h, 1d, 1w, можно вместе (1d12h), perm - навсегда.
+#                                      Без времени мут бессрочный. Работает и по игрокам не в сети.
+#  /vunmute <игрок>                    вернуть микрофон (applevoicemute.unmute)
+#  /vmutelist [страница]               список мутов (applevoicemute.list)
+#  /voice                              инструкция, проверка мода и награда за установку
+#  /applevoicemute reload              перечитать этот файл, mutes.yml и rewards.yml
+#  /applevoicemute resetreward <игрок> дать игроку получить награду за /voice ещё раз
+#
+#  Модератору достаточно одного права applevoicemute.staff (мут, размут, список, уведомления).
+#  Заглушённого игрока не слышит никто - ни рядом, ни в группе: сервер отбрасывает его звук.
+#
+#  Сообщения - в формате MiniMessage. Пустая строка '' отключает сообщение, список - несколько строк.
+#  Свои теги: <ok> <error> <warn> <info> - значки из style.prefix; <text> <accent> <muted> <good> <bad> -
+#  цвета из style.colors. Символы пака пишите в двойных кавычках: "\uEBA1".
+# ══════════════════════════════════════════════════════════════════
+
+mute:
+  # Раз в сколько секунд напоминать заглушённому игроку (над хотбаром), когда он пытается говорить. 0 - не напоминать
+  remind-seconds: 5
+  # Причина, если модератор её не указал
+  default-reason: "Нарушение правил голосового чата"
+  # Что писать вместо срока у бессрочного мута
+  permanent-text: "навсегда"
+
+voice:
+  # Страница мода. Подставляется в <url> и открывается по клику на <link>…</link>
+  download-url: "https://modrinth.com/plugin/simple-voice-chat"
+  reward:
+    enabled: true
+    # Выполняются от консоли один раз на игрока, когда он вводит /voice с установленным модом. %player% - ник
+    commands:
+      - "bcases give %player% donate 1"
+    # Одна награда на один сетевой адрес - чтобы кейсы не собирали твинками.
+    # В rewards.yml хранится не сам адрес, а его хеш.
+    one-per-address: true
+
+# Плейсхолдеры PlaceholderAPI:
+#   %applevoicemute_muted%      true / false
+#   %applevoicemute_icon%       значок ниже - для таба и ника
+#   %applevoicemute_left%       сколько осталось ("2 ч 10 мин" или "навсегда")
+#   %applevoicemute_reason%     причина
+#   %applevoicemute_installed%  true / false - обнаружен ли у игрока мод
+# В TAB значок подключён условием voice_icon (plugins/TAB/config.yml): у заглушённого игрока он заменяет
+# значок «войс включён / выключен».
+placeholders:
+  # Значок ресурспака bordo_menu: font/voice/mute.png. Чтобы убрать значок, оставьте ""
+  muted-icon: "\uEBA6"
+  unmuted-icon: ""
+
+style:
+  colors:
+    text: "#F8F0DC"
+    accent: "#FB2200"
+    muted: "#9A938A"
+    good: "#5BD16B"
+    bad: "#FF5A4E"
+  prefix:
+    ok: "<white>\uEBA1</white> "
+    error: "<white>\uEBA0</white> "
+    warn: "<white>\uEBA2</white> "
+    info: "<white>\uEBA3</white> "
+
+messages:
+  errors:
+    no-permission: "<error><text>Недостаточно прав для этой команды."
+    players-only: "<error><text>Эта команда только для игроков."
+    player-not-found: "<error><text>Игрок <accent><player></accent> ещё не заходил на сервер."
+
+  mute:
+    usage: "<info><text>Использование: <accent>/vmute <игрок> [время] [причина]</accent> <muted>• время: 10m, 2h, 1d, perm"
+    done: "<ok><text>Игрок <accent><player></accent> заглушён в голосовом чате. Срок: <accent><time></accent>. Причина: <accent><reason></accent>"
+    broadcast: "<warn><text><accent><by></accent> заглушил игрока <accent><player></accent> в голосовом чате. Срок: <accent><time></accent>. Причина: <accent><reason></accent>"
+    target:
+      - "<warn><text>Модератор <accent><by></accent> отключил вам микрофон в голосовом чате."
+      - "<text>   Срок: <accent><time></accent> <muted>•</muted> причина: <accent><reason></accent>"
+    # Показывается над хотбаром, когда заглушённый игрок пытается говорить
+    reminder: "<bad>Микрофон отключён модератором</bad> <muted>•</muted> <text><time>"
+    expired: "<ok><text>Срок мута в голосовом чате истёк - вас снова слышно."
+
+  unmute:
+    usage: "<info><text>Использование: <accent>/vunmute <игрок></accent>"
+    done: "<ok><text>Игроку <accent><player></accent> возвращён микрофон в голосовом чате."
+    broadcast: "<info><text><accent><by></accent> снял мут в голосовом чате с игрока <accent><player></accent>."
+    target: "<ok><text>Модератор <accent><by></accent> вернул вам микрофон в голосовом чате."
+    not-muted: "<error><text>У игрока <accent><player></accent> нет мута в голосовом чате."
+
+  list:
+    empty: "<info><text>Сейчас в голосовом чате никто не заглушён."
+    header: "<info><text>Муты в голосовом чате: <accent><count></accent> <muted>• страница <page> из <pages>"
+    entry: "<text>   <accent><player></accent> <muted>•</muted> <time> <muted>•</muted> <reason> <muted>(<by>)"
+
+  admin:
+    usage: "<info><text>Использование: <accent>/applevoicemute reload</accent> или <accent>/applevoicemute resetreward <игрок></accent>"
+    reloaded: "<ok><text>AppleVoicechatMute перезагружен."
+    reward-reset: "<ok><text>Игрок <accent><player></accent> снова может получить награду за <accent>/voice</accent>."
+    reward-none: "<error><text>Игрок <accent><player></accent> ещё не получал награду за <accent>/voice</accent>."
+
+  voice:
+    header: "<info><text>Голосовой чат на сервере работает через мод <accent>Simple Voice Chat</accent>."
+    not-installed: "<error><text>У вас мод <bad>не обнаружен</bad>. Как установить:"
+    # Голосовой сервер не запущен (например, занят его UDP-порт) - проверить мод нельзя
+    unavailable: "<warn><text>Голосовой сервер сейчас недоступен, проверить мод не получилось. Как установить:"
+    instructions:
+      - "<text>   <accent>1.</accent> Скачайте мод: <link><accent><u><url></u></accent></link>"
+      - "<text>   <accent>2.</accent> Выберите файл под свою версию игры и загрузчик: Fabric, NeoForge, Forge или Quilt."
+      - "<text>   <accent>3.</accent> Положите его в папку <accent>.minecraft/mods</accent> и перезапустите игру. Для Fabric нужен ещё <accent>Fabric API</accent>."
+      - "<text>   <accent>4.</accent> Зайдите на сервер и снова введите <accent>/voice</accent> - за установленный мод вы получите <accent>донат-кейс</accent>."
+    # Подсказка при наведении на ссылку из <link>
+    link-hover: "<text>Открыть страницу мода"
+    installed: "<ok><text>Мод <good>обнаружен</good>, вы подключены к голосовому чату."
+    installed-not-connected:
+      - "<warn><text>Мод <good>обнаружен</good>, но связи с голосовым сервером нет."
+      - "<text>   Перезайдите на сервер. Если не помогло - проверьте, не блокирует ли соединение антивирус или VPN."
+    controls: "<text>   Клавиши: <accent>V</accent> - меню, <accent>Caps Lock</accent> - говорить, <accent>M</accent> - выключить микрофон, <accent>G</accent> - группы."
+    reward-given: "<ok><text>Спасибо за установку мода! Вам выдан <accent>донат-кейс</accent> - откройте его на спавне."
+    reward-already: "<info><text>Награду за установку мода вы уже получили."
+    reward-address: "<info><text>Награда за установку мода на ваш адрес уже выдавалась."
